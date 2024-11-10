@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N-Queens Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .game-container {
+      text-align: center;
+    }
+
+    .chessboard {
+      display: grid;
+      grid-template-columns: repeat(8, 50px);
+      grid-template-rows: repeat(8, 50px);
+      margin: 20px auto;
+      border: 2px solid #333;
+    }
+
+    .cell {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .cell:nth-child(even) {
+      background-color: #ffeb3b;
+    }
+
+    .cell:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    .conflict {
+      background-color: #f8d7da;
+    }
+
+    .status {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 5px 10px;
+      margin: 0 5px;
+      font-size: 16px;
+    }
+
+    .message {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>N-Queens Game</h1>
+    <div id="chessboard" class="chessboard"></div>
+    <div class="status">
+      <p id="queen-counter">0 / 8 Queens Placed</p>
+      <button onclick="showSolution()">Answer</button>
+      <button onclick="restartGame()">Restart</button>
+      <p id="message" class="message"></p>
+    </div>
+  </div>
+  <script>
+    const N = 8;
+    let queens = [];
+    let queenCount = 0;
+
+    // Initialize the chessboard
+    function initializeBoard() {
+      const chessboard = document.getElementById("chessboard");
+      chessboard.innerHTML = "";
+
+      for (let row = 0; row < N; row++) {
+        for (let col = 0; col < N; col++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          cell.addEventListener("click", () => placeQueen(row, col));
+          chessboard.appendChild(cell);
+        }
+      }
+
+      updateQueenCounter();
+      document.getElementById("message").innerText = ""; // Clear any messages
+    }
+
+    function placeQueen(row, col) {
+      if (isConflict(row, col)) {
+        document.getElementById("message").innerText = "Invalid move: This position conflicts with another queen!";
+        return;
+      }
+
+      const existingQueenIndex = queens.findIndex(
+        (q) => q.row === row && q.col === col
+      );
+
+      if (existingQueenIndex !== -1) {
+        queens.splice(existingQueenIndex, 1);
+        queenCount--;
+      } else {
+        queens.push({ row, col });
+        queenCount++;
+        document.getElementById("message").innerText = ""; // Clear any error messages on valid move
+      }
+
+      updateBoard();
+      updateQueenCounter();
+    }
+
+    function updateBoard() {
+      document.querySelectorAll(".cell").forEach((cell) => {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        cell.classList.remove("conflict");
+
+        if (queens.some((q) => q.row === row && q.col === col)) {
+          cell.innerHTML = "♛";
+        } else {
+          cell.innerHTML = "";
+        }
+
+        if (isConflict(row, col)) {
+          cell.classList.add("conflict");
+        }
+      });
+    }
+
+    function isConflict(row, col) {
+      return queens.some(
+        (q) =>
+          q.row === row ||
+          q.col === col ||
+          q.row - q.col === row - col ||
+          q.row + q.col === row + col
+      );
+    }
+
+    function updateQueenCounter() {
+      document.getElementById("queen-counter").innerText = `${queenCount} / ${N} Queens Placed`;
+
+      if (queenCount === N && !queens.some((q, i) => isConflict(q.row, q.col))) {
+        document.getElementById("message").innerText = "Congratulations! You solved the puzzle!";
+      }
+    }
+
+    function restartGame() {
+      queens = [];
+      queenCount = 0;
+      initializeBoard();
+    }
+
+    function showSolution() {
+      // Clear the board and display a precomputed solution for N=8
+      queens = [
+        { row: 0, col: 0 },
+        { row: 1, col: 4 },
+        { row: 2, col: 7 },
+        { row: 3, col: 5 },
+        { row: 4, col: 2 },
+        { row: 5, col: 6 },
+        { row: 6, col: 1 },
+        { row: 7, col: 3 }
+      ];
+      queenCount = N;
+      updateBoard();
+      updateQueenCounter();
+      document.getElementById("message").innerText = "Solution shown!";
+    }
+
+    // Initialize the game on page load
+    window.onload = initializeBoard;
+  </script>
+</body>
+</html>
